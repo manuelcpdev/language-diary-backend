@@ -18,5 +18,8 @@
     "express-validator": "^7.3.2",
     "jose": "^6.2.2",
     "mariadb": "^3.5.2"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }
