@@ -12,9 +12,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-app.use('/words', wordsRouter);
   res.send('Hello World!')
 })
+app.use('/words', wordsRouter);
 app.use('/users', usersRouter);
 app.post('/auth/login', authController.login);
 app.get('/auth/refresh', authController.regenerateToken);
