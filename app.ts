@@ -29,6 +29,7 @@ app.get('/', (req, res) => {
 app.use('/words', wordsRouter);
 app.use('/users', usersRouter);
 app.post('/auth/login', authController.login);
+app.get('/auth/logout', authController.logout);
 app.get('/auth/refresh', authController.regenerateToken);
 
 app.listen(port, () => {
