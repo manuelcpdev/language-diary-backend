@@ -1,8 +1,8 @@
 import { SignJWT, jwtVerify, jwtDecrypt } from 'jose';
 
 class JWTService {
-    secret = process.env.JWT_SECRET;
-    secretRefresh = process.env.JWT_REFRESH_SECRET
+    secret: Uint8Array = new TextEncoder().encode(process.env.JWT_SECRET) ?? "NO_VALUE";
+    secretRefresh: Uint8Array = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET) ?? "NO_VALUE"
 
     constructor() {
         if (!this.secret) {
@@ -11,12 +11,9 @@ class JWTService {
         if (!this.secretRefresh) {
             throw new Error('JWT_REFRESH_SECRET is not defined');
         }
-
-        this.secret = new TextEncoder().encode(this.secret);
-        this.secretRefresh = new TextEncoder().encode(this.secretRefresh)
     }
     
-    validate = async (token, secretType = 'access') => {
+    validate = async (token: string, secretType: 'access' | 'refresh') => {
         const secret = secretType == 'access' ? this.secret : this.secretRefresh;
         try {
             const result = await jwtVerify(token, secret)
@@ -25,18 +22,18 @@ class JWTService {
                 valid: true,
                 payload: result.payload
             };
-        } catch (error) {
+        } catch (error: unknown) {
             const errorObj = {
-                error: error.message
+                error: error instanceof Error ? error.message : error
             }
             return {
                 valid: false,
-                error: error.message
+                error: error instanceof Error ? error.message : error
             };
         }
     }
 
-    generateToken = async (data, expiration='15m', secretType='access') => {
+    generateToken = async (data: AuthJWT, expiration='15m', secretType='access') => {
         const secret = secretType == 'access' ? this.secret : this.secretRefresh;
         const token = await new SignJWT(data)
             .setProtectedHeader({ alg: 'HS256' })
@@ -46,11 +43,6 @@ class JWTService {
         return token;
     }
 
-    decryptToken = async (token, secretType='access') => {
-        const secret = secretType == 'access' ? this.secret : this.secretRefresh;
-        const decrypted = await jwtVerify(token, secret);
-        return decrypted;
-    }
 }
 
 export const jwtService = new JWTService();

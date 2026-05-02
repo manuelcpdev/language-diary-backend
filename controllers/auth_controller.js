@@ -1,18 +1,29 @@
 import { authService } from "../services/auth_service.js";
 import { jwtService } from "../services/jwt_service.js";
+import cookieParser from "cookie-parser";
 
 class AuthController {
 
     login = async (req, res, next) => {
         try {
             const { name, password } = req.body;
-            const user = await authService.login(name, password);
+            const tokens = await authService.login({name, password});
 
-            if (user.error) {
-                return res.status(400).json(user.error);
+            if (tokens.error) {
+                return res.status(400).json(tokens.error);
             }
+            if(req.cookies.refreshToken) {
+                console.log(req.cookies.refreshToken)
+            }
+            res.cookie('refreshToken', tokens.refreshToken, {
+                domain: 'localhost',
+                path: '/auth/refresh',
+                expires: new Date(Date.now() + 900000),
+                secure: false,
+                httpOnly: true
+            });
 
-            return res.status(200).json(user);
+            return res.status(200).json(tokens);
         } catch (error) {
             return res.status(400).json({
                 error: error.message
@@ -48,6 +59,13 @@ class AuthController {
             });
         }
     };
+
+     logout = async (req, res, next) => {
+        res.clearCookie('refreshToken', { path: '/auth/refesh' });
+        res.status(200).json({
+            message: 'Logged out successfully'
+        });
+     }
 }
 
 export const authController = new AuthController();
